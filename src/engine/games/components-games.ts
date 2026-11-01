@@ -44,7 +44,8 @@ export const nameThatPart: GameDef<{ rounds: NtpRound[] }, NtpSecret, { name: st
         pts: (nameOk ? 1 : 0) + (purposeOk ? 1 : 0),
       };
     });
-    return { score: feedback.reduce((t, f) => t + f.pts, 0), max: secret.rounds.length * 2, feedback: feedback.map(({ pts: _pts, ...f }) => f) };
+    const score = feedback.reduce((t, f) => t + f.pts, 0);
+    return { score, max: secret.rounds.length * 2, feedback: feedback.map((f) => ({ title: f.title, correct: f.correct, detail: f.detail })) };
   },
 };
 
@@ -56,7 +57,7 @@ const LAYOUTS: Layout[] = [
   {
     id: "ac-split",
     title: "Split-system air conditioner",
-    brief: "Place each component in the refrigeration circuit. Follow the arrows: refrigerant flows clockwise from the compressor.",
+    brief: "Place each component in the refrigeration circuit. Follow the dashed loop: refrigerant flows from the compressor through each slot in turn.",
     slots: [
       { id: "s1", x: 78, y: 70, hint: "Outdoor unit — pumps vapor" },
       { id: "s2", x: 78, y: 22, hint: "Outdoor unit — rejects heat" },
@@ -73,7 +74,7 @@ const LAYOUTS: Layout[] = [
     brief: "Build a heat pump circuit. Two extra components protect the compressor and let it reverse.",
     slots: [
       { id: "s1", x: 78, y: 78, hint: "Pumps vapor" },
-      { id: "s2", x: 92, y: 50, hint: "Directs discharge gas" },
+      { id: "s2", x: 86, y: 50, hint: "Directs discharge gas" },
       { id: "s3", x: 78, y: 18, hint: "Outdoor coil" },
       { id: "s4", x: 50, y: 10, hint: "Liquid line" },
       { id: "s5", x: 22, y: 18, hint: "Indoor metering" },
@@ -97,7 +98,7 @@ export const buildTheSystem: GameDef<{ layout: Omit<Layout, "answer">; parts: { 
   start({ seed }) {
     const layout = LAYOUTS[seed % LAYOUTS.length];
     const parts = shuffle(rng(seed), layout.parts).map((id) => ({ id, name: componentById(id)!.name }));
-    const { answer: _a, ...pub } = layout;
+    const pub = { id: layout.id, title: layout.title, brief: layout.brief, slots: layout.slots, parts: layout.parts };
     return { puzzle: { layout: pub, parts }, secret: { layout: layout.id } };
   },
   grade(secret, submission) {

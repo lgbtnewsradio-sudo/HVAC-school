@@ -92,7 +92,10 @@ export function gradeQuestion(q: Question, response: Response): GradeResult {
       const answer = new Set(q.answer);
       let hits = 0;
       let wrong = 0;
-      for (const p of picked) (answer.has(p) ? hits++ : wrong++);
+      for (const p of picked) {
+        if (answer.has(p)) hits++;
+        else wrong++;
+      }
       const correct = wrong === 0 && hits === answer.size;
       const score = Math.max(0, (hits - wrong) / answer.size);
       const feedback = q.options

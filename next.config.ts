@@ -10,6 +10,14 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // PGlite ships a WASM binary; keep it external so the server bundle loads it from node_modules.
   serverExternalPackages: ["@electric-sql/pglite"],
+  turbopack: {
+    rules: {
+      "*.css": {
+        loaders: ["@tailwindcss/turbopack"],
+        as: "*.css",
+      },
+    },
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

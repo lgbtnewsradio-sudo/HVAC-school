@@ -184,7 +184,7 @@ export const installationChallenge: GameDef<{ steps: string[]; inspection: { id:
     };
   },
   grade(secret, submission) {
-    const sub = isRecord(submission) ? submission : {};
+    const sub: Record<string, unknown> = isRecord(submission) ? submission : {};
     const steps = asArray(sub.steps).map(String);
     const inPlace = steps.length === INSTALL_STEPS.length ? steps.filter((s, i) => s === INSTALL_STEPS[i]).length : 0;
     const marked = new Set(asArray(sub.mistakes).map(String));

@@ -30,6 +30,7 @@ async function create(): Promise<DB> {
   const { drizzle } = await import("drizzle-orm/pglite");
   const { migrate } = await import("drizzle-orm/pglite/migrator");
   const dataDir = url === "memory://" ? undefined : url.replace(/^file:\/\//, "") || path.join(process.cwd(), ".data", "pglite");
+  if (dataDir) (await import("node:fs")).mkdirSync(dataDir, { recursive: true });
   const client = new PGlite(dataDir);
   const db = drizzle(client, { schema });
   await migrate(db, { migrationsFolder: MIGRATIONS });

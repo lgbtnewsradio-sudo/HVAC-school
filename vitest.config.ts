@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: { alias: { "@": path.resolve(__dirname, "src"), "server-only": path.resolve(__dirname, "tests/server-only-stub.ts") } },
   test: {
     include: ["tests/**/*.test.ts"],
+    exclude: ["tests/e2e/**"],
     environment: "node",
     testTimeout: 30000,
     hookTimeout: 60000,

@@ -54,3 +54,26 @@ describe("curriculum integrity", () => {
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 });
+
+import { DIAGRAM_KEYS } from "@/components/diagrams";
+import { WIDGET_KEYS } from "@/components/widgets";
+import { SCENARIOS } from "@/engine/sim/scenarios";
+import { COMPONENTS } from "@/content/components";
+
+describe("lesson visuals and widgets", () => {
+  it("every referenced diagram, widget and simulator link exists", () => {
+    for (const l of BASE_LESSONS)
+      for (const s of l.steps) {
+        if ((s.kind === "concept" || s.kind === "example") && s.visual) expect(DIAGRAM_KEYS, `${l.id} visual ${s.visual}`).toContain(s.visual);
+        if (s.kind === "question" && s.question.visual) expect(DIAGRAM_KEYS).toContain(s.question.visual);
+        if (s.kind === "interactive") {
+          if (s.widget.startsWith("sim-link:")) expect(SCENARIOS.map((x) => x.id), `${l.id} ${s.widget}`).toContain(s.widget.slice(9));
+          else expect(WIDGET_KEYS, `${l.id} widget ${s.widget}`).toContain(s.widget);
+        }
+      }
+  });
+  it("every component has an illustration", async () => {
+    const src = (await import("node:fs")).readFileSync("src/components/part-art.tsx", "utf8");
+    for (const c of COMPONENTS) expect(src, c.id).toMatch(new RegExp(`(^|\\s)"?${c.id}"?:`, "m"));
+  });
+});
