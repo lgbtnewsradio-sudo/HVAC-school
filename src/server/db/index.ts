@@ -29,7 +29,10 @@ async function create(): Promise<DB> {
   const { PGlite } = await import("@electric-sql/pglite");
   const { drizzle } = await import("drizzle-orm/pglite");
   const { migrate } = await import("drizzle-orm/pglite/migrator");
-  const dataDir = url === "memory://" ? undefined : url.replace(/^file:\/\//, "") || path.join(process.cwd(), ".data", "pglite");
+  // On serverless hosts only /tmp is writable. Without DATABASE_URL there this is an EPHEMERAL demo database.
+  const fallback = process.env.VERCEL ? "/tmp/hvac-pglite" : path.join(process.cwd(), ".data", "pglite");
+  const dataDir = url === "memory://" ? undefined : url.replace(/^file:\/\//, "") || fallback;
+  if (process.env.VERCEL && !url) console.warn("[db] DATABASE_URL is not set — using an ephemeral PGlite database in /tmp. Data will not persist.");
   if (dataDir) (await import("node:fs")).mkdirSync(dataDir, { recursive: true });
   const client = new PGlite(dataDir);
   const db = drizzle(client, { schema });

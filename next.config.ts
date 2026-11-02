@@ -10,6 +10,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // PGlite ships a WASM binary; keep it external so the server bundle loads it from node_modules.
   serverExternalPackages: ["@electric-sql/pglite"],
+  // SQL migrations are read from disk at runtime; make sure serverless bundles include them.
+  outputFileTracingIncludes: { "/**": ["./drizzle/**/*"] },
   turbopack: {
     rules: {
       "*.css": {
