@@ -21,7 +21,16 @@ async function create(): Promise<DB> {
     const { drizzle } = await import("drizzle-orm/postgres-js");
     const { migrate } = await import("drizzle-orm/postgres-js/migrator");
     // prepare:false keeps compatibility with Supabase's transaction pooler.
-    const client = postgres(url, { prepare: false, max: Number(process.env.DB_POOL_MAX ?? 5) });
+    // Serverless + pooler: close idle sockets before the pooler silently drops them (a dead
+    // pooled socket otherwise makes the next query hang until the request times out), cap
+    // connection lifetime, and fail fast instead of hanging when a connection can't be made.
+    const client = postgres(url, {
+      prepare: false,
+      max: Number(process.env.DB_POOL_MAX ?? 5),
+      idle_timeout: 20,
+      max_lifetime: 60 * 5,
+      connect_timeout: 10,
+    });
     const db = drizzle(client, { schema });
     if (process.env.DB_AUTO_MIGRATE !== "false") await migrate(db, { migrationsFolder: MIGRATIONS });
     return db as unknown as DB;
