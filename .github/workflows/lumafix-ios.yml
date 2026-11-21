@@ -45,6 +45,7 @@ jobs:
       - name: Build App Playground with xcodebuild (iOS Simulator)
         working-directory: video-enhancer/ios/LumaFix.swiftpm
         run: |
+          set -o pipefail
           xcodebuild -list || true
           xcodebuild -scheme LumaFix -destination 'generic/platform=iOS Simulator' \
             -skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO build | tail -40
