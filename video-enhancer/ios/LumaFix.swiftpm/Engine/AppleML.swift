@@ -60,10 +60,10 @@ final class AppleTemporalDenoiser {
 
     init?(width: Int, height: Int, context: CIContext) {
         guard VTTemporalNoiseFilterConfiguration.isSupported else { return nil }
-        let maxDim = VTTemporalNoiseFilterConfiguration.maximumDimensions
-        let minDim = VTTemporalNoiseFilterConfiguration.minimumDimensions
-        guard width <= Int(maxDim.width), height <= Int(maxDim.height),
-              width >= Int(minDim.width), height >= Int(minDim.height) else { return nil }
+        if let maxDim = VTTemporalNoiseFilterConfiguration.maximumDimensions,
+           width > Int(maxDim.width) || height > Int(maxDim.height) { return nil }
+        if let minDim = VTTemporalNoiseFilterConfiguration.minimumDimensions,
+           width < Int(minDim.width) || height < Int(minDim.height) { return nil }
         let formats = VTTemporalNoiseFilterConfiguration.supportedSourcePixelFormats
         let preferred: [OSType] = [kCVPixelFormatType_32BGRA, kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange, kCVPixelFormatType_420YpCbCr8BiPlanarFullRange]
         guard let format = preferred.first(where: { formats.contains($0) }) ?? formats.first,
@@ -79,8 +79,8 @@ final class AppleTemporalDenoiser {
         sourcePool = src
         destinationPool = dst
         self.context = context
-        pastCount = max(0, cfg.previousFrameCount)
-        futureCount = max(0, cfg.nextFrameCount)
+        pastCount = max(0, cfg.previousFrameCount ?? 2)
+        futureCount = max(0, cfg.nextFrameCount ?? 2)
     }
 
     deinit { processor.endSession() }

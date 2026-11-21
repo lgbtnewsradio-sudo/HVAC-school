@@ -4,7 +4,8 @@ import Foundation
 
 /// Renders a before/after still for the editor. Decodes a short run-up before the chosen time so
 /// the temporal denoiser has history and the preview matches the final export.
-final class PreviewRenderer {
+/// Used from one serial queue at a time.
+final class PreviewRenderer: @unchecked Sendable {
     let source: VideoSource
     private let maxDimension: CGFloat
     private var enhancer: FrameEnhancer?
