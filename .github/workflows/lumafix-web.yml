@@ -1,0 +1,52 @@
+name: LumaFix web app
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "video-enhancer/web/**"
+      - ".github/workflows/lumafix-web.yml"
+  pull_request:
+    paths:
+      - "video-enhancer/web/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: lumafix-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: video-enhancer/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: video-enhancer/web/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: video-enhancer/web/dist
+
+  # Publishes to GitHub Pages from main. One-time setup: repo Settings → Pages → Source: "GitHub Actions".
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
