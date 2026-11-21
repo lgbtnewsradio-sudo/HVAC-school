@@ -1,7 +1,8 @@
 import CoreImage
 import Foundation
 
-/// Core Image kernels written in Metal Shading Language and compiled at runtime
+/// Core Image kernels written in Metal Shading Language and compiled at runtime as
+/// `[[stitchable]]` functions
 /// (`CIKernel.kernels(withMetalString:)`, iOS 17+). Runtime compilation keeps the project a
 /// plain Swift package that opens in Swift Playgrounds, which cannot build .metal files.
 ///
@@ -74,11 +75,8 @@ static float3 catmullRom(coreimage::sampler s, float2 p) {
     return clamp(r, 0.0, 1.0);
 }
 
-extern "C" {
-namespace coreimage {
-
 // 1. Motion-compensated temporal denoise. Alpha = how much history was used.
-float4 lfTemporal(sampler cur, sampler hist, float2 shift, float strength, float hasHist, destination dest) {
+[[stitchable]] float4 lfTemporal(coreimage::sampler cur, coreimage::sampler hist, float2 shift, float strength, float hasHist, coreimage::destination dest) {
     float2 p = dest.coord();
     float3 c = at(cur, p);
     float2 hp = p + shift;
@@ -107,7 +105,7 @@ float4 lfTemporal(sampler cur, sampler hist, float2 shift, float strength, float
 }
 
 // 2. Edge-aware bilateral denoise in YCbCr; stronger where temporal averaging couldn't help.
-float4 lfSpatial(sampler src, float strength, float gain, destination dest) {
+[[stitchable]] float4 lfSpatial(coreimage::sampler src, float strength, float gain, coreimage::destination dest) {
     float2 p = dest.coord();
     float4 center = src.sample(src.transform(p));
     float3 c0 = center.rgb;
@@ -147,16 +145,16 @@ float4 lfSpatial(sampler src, float strength, float gain, destination dest) {
 }
 
 // 3. Statistics image: gamma RGB + encoded log luminance.
-float4 lfStats(sampler src, destination dest) {
+[[stitchable]] float4 lfStats(coreimage::sampler src, coreimage::destination dest) {
     float3 c = at(src, dest.coord());
     return float4(c, encodeLogLum(dot(toLinear(c), LUMA)));
 }
 
 // 4. Exposure, edge-aware local tone mapping, white balance, colour, sharpening.
 //    `local` is the low-res stats image scaled back up to frame size; `spacing` its texel size in pixels.
-float4 lfTone(sampler src, sampler local, float key, float3 meanRGB, float spacing,
+[[stitchable]] float4 lfTone(coreimage::sampler src, coreimage::sampler local, float key, float3 meanRGB, float spacing,
               float brightness, float shadows, float colorFix, float saturation,
-              float sharpen, float blackPoint, float contrast, destination dest) {
+              float sharpen, float blackPoint, float contrast, coreimage::destination dest) {
     float2 p = dest.coord();
     float3 c = at(src, p);
 
@@ -214,7 +212,5 @@ float4 lfTone(sampler src, sampler local, float key, float3 meanRGB, float spaci
     return float4(o, 1.0);
 }
 
-}
-}
 """#
 }
