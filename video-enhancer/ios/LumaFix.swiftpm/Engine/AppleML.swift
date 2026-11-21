@@ -9,14 +9,14 @@ import VideoToolbox
 /// them when available and silently falls back to its own GPU pipeline otherwise.
 enum AppleML {
     static var denoiseAvailable: Bool {
-        #if arch(arm64)
+        #if arch(arm64) && !targetEnvironment(simulator)
         if #available(iOS 26.0, macOS 26.0, *) { return VTTemporalNoiseFilterConfiguration.isSupported }
         #endif
         return false
     }
 
     static var superResolutionAvailable: Bool {
-        #if arch(arm64)
+        #if arch(arm64) && !targetEnvironment(simulator)
         if #available(iOS 26.0, macOS 26.0, *) { return VTSuperResolutionScalerConfiguration.isSupported }
         #endif
         return false
@@ -38,9 +38,9 @@ private func poolBuffer(_ pool: CVPixelBufferPool) throws -> CVPixelBuffer {
     return buffer
 }
 
-// The ML frame processors only exist on Apple silicon (they are absent from Intel simulator
-// SDKs), so they are compiled for arm64 only; other builds get inert stand-ins.
-#if arch(arm64)
+// The ML frame processors exist only on real Apple-silicon devices and Macs (the simulator SDKs
+// don't ship them), so they are compiled only there; other builds get inert stand-ins.
+#if arch(arm64) && !targetEnvironment(simulator)
 
 @available(iOS 26.0, macOS 26.0, *)
 private func run(_ processor: VTFrameProcessor, _ parameters: any VTFrameProcessorParameters) async throws {
@@ -218,7 +218,7 @@ final class AppleTemporalDenoiser {
 final class AppleSuperResolution {
     init?(width: Int, height: Int, factor: Double, context: CIContext) async { return nil }
     func upscale(_ image: CIImage, pts: CMTime) async throws -> CVPixelBuffer {
-        throw NSError(domain: "LumaFix", code: 6, userInfo: [NSLocalizedDescriptionKey: "Apple super resolution needs Apple silicon."])
+        throw NSError(domain: "LumaFix", code: 6, userInfo: [NSLocalizedDescriptionKey: "Apple super resolution needs a real Apple-silicon device."])
     }
 }
 
