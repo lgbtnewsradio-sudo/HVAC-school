@@ -1,0 +1,50 @@
+name: LumaFix iOS app
+
+on:
+  push:
+    paths:
+      - "video-enhancer/ios/**"
+      - ".github/workflows/lumafix-ios.yml"
+  pull_request:
+    paths:
+      - "video-enhancer/ios/**"
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: video-enhancer/ios
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode 26
+        run: |
+          ls -d /Applications/Xcode*.app
+          XC=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XC" ]; then XC=$(ls -d /Applications/Xcode*.app | sort -V | tail -1); fi
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+
+      - name: Type-check app for iOS
+        run: |
+          SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+          xcrun swiftc -typecheck -parse-as-library -sdk "$SDK" -target arm64-apple-ios17.0 \
+            LumaFix.swiftpm/App/*.swift LumaFix.swiftpm/Engine/*.swift
+
+      - name: Build engine test (macOS)
+        run: |
+          xcrun swiftc -O -parse-as-library -target arm64-apple-macos14.0 \
+            LumaFix.swiftpm/Engine/*.swift EngineTests/main.swift -o "$RUNNER_TEMP/enginetest"
+
+      - name: Run engine test
+        run: "$RUNNER_TEMP/enginetest"
+
+      - name: Build App Playground with xcodebuild (iOS Simulator)
+        working-directory: video-enhancer/ios/LumaFix.swiftpm
+        run: |
+          xcodebuild -list || true
+          xcodebuild -scheme LumaFix -destination 'generic/platform=iOS Simulator' \
+            -skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO build | tail -40

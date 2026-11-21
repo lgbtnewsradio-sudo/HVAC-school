@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>LumaFix</title>
+    <meta name="description" content="Fix dark, grainy phone videos right on your iPhone, iPad or Mac. Private, on-device enhancement and upscaling." />
+    <meta name="theme-color" content="#0b0d12" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="LumaFix" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon-180.png" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="top">
+        <div class="brand">
+          <img src="./icon.svg" alt="" width="32" height="32" />
+          <div>
+            <h1>LumaFix</h1>
+            <p>Night-video enhancer · runs on your device</p>
+          </div>
+        </div>
+        <label class="btn btn-ghost" for="file">Choose video</label>
+      </header>
+
+      <input id="file" type="file" accept="video/*" hidden />
+
+      <section id="empty" class="empty">
+        <div class="empty-card">
+          <div class="empty-icon" aria-hidden="true">
+            <img src="./icon.svg" alt="" width="72" height="72" />
+          </div>
+          <h2>Make dark videos look like they were shot in good light</h2>
+          <p>Removes grain across frames, lifts shadows, fixes color casts and sharpens. You can upscale to 4K too. Your video never leaves this device.</p>
+          <label class="btn btn-primary btn-lg" for="file">Choose from Photos</label>
+          <p class="fine">Works best in Safari on iPhone/iPad (iOS 17+) or Mac.</p>
+        </div>
+      </section>
+
+      <section id="editor" class="editor" hidden>
+        <div class="stage-wrap">
+          <div id="stage" class="stage" aria-label="Before and after preview. Drag to compare.">
+            <span class="tag tag-left">Before</span>
+            <span class="tag tag-right">After</span>
+            <div id="busy" class="busy" hidden><span class="spinner"></span></div>
+          </div>
+          <div class="scrub">
+            <span id="tcur" class="tc">0:00</span>
+            <input id="time" type="range" min="0" max="1" step="0.01" value="0" aria-label="Preview position" />
+            <span id="tdur" class="tc">0:00</span>
+          </div>
+          <p id="meta" class="meta"></p>
+        </div>
+
+        <aside class="panel">
+          <div class="presets" id="presets" role="group" aria-label="Presets"></div>
+
+          <button id="ai" class="btn btn-ai" type="button">
+            <span class="sparkle" aria-hidden="true">✦</span> AI auto-tune <small>(Gemini)</small>
+          </button>
+          <p id="aiNote" class="ai-note" hidden></p>
+
+          <details class="group" open>
+            <summary>Adjust</summary>
+            <div id="sliders" class="sliders"></div>
+            <button id="reset" class="btn btn-ghost btn-sm" type="button">Reset to defaults</button>
+          </details>
+
+          <div class="group out">
+            <label for="scale">Output size</label>
+            <select id="scale">
+              <option value="auto">Auto (upscale small videos)</option>
+              <option value="1">Original size</option>
+              <option value="1.5">1.5× upscale</option>
+              <option value="2">2× upscale (max 4K)</option>
+            </select>
+            <p id="outInfo" class="fine"></p>
+          </div>
+
+          <button id="export" class="btn btn-primary btn-lg btn-block" type="button">Enhance full video</button>
+
+          <details class="group">
+            <summary>Gemini settings</summary>
+            <p class="fine">
+              AI auto-tune sends <b>one still frame</b> (not your video) to Google Gemini, which picks the best settings for
+              the scene. You need a free API key from
+              <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Sign in with your
+              Gemini account and tap “Create API key”.
+            </p>
+            <div class="row">
+              <input id="key" type="password" autocomplete="off" placeholder="Paste Gemini API key" />
+              <button id="saveKey" class="btn btn-ghost btn-sm" type="button">Save</button>
+            </div>
+          </details>
+        </aside>
+      </section>
+
+      <div id="progress" class="overlay" hidden>
+        <div class="sheet">
+          <h3>Enhancing…</h3>
+          <div class="bar"><div id="barFill"></div></div>
+          <p id="progText" class="fine">Starting…</p>
+          <p class="fine">Keep this screen open until it finishes.</p>
+          <button id="cancel" class="btn btn-ghost" type="button">Cancel</button>
+        </div>
+      </div>
+
+      <div id="done" class="overlay" hidden>
+        <div class="sheet">
+          <h3>Done ✨</h3>
+          <video id="result" playsinline controls muted loop></video>
+          <p id="doneText" class="fine"></p>
+          <button id="save" class="btn btn-primary btn-lg btn-block" type="button">Save to Photos</button>
+          <p id="saveHint" class="fine">In the share sheet, tap <b>Save Video</b>.</p>
+          <a id="download" class="btn btn-ghost btn-block" download>Download file</a>
+          <button id="closeDone" class="btn btn-ghost btn-block" type="button">Back to editor</button>
+        </div>
+      </div>
+
+      <div id="toast" class="toast" role="status" hidden></div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
