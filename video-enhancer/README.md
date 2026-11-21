@@ -67,8 +67,15 @@ A paid developer account ($99/yr) extends that to a year and allows TestFlight/A
 
 ### Option C: Use the web app
 
-Open the deployed web app in Safari → Share → **Add to Home Screen**. It works on iPhone, iPad and
-Mac with nothing to install.
+Open the web app in Safari → Share → **Add to Home Screen**. It works on iPhone, iPad and Mac
+with nothing to install.
+
+**Publishing it (one-time):** in this GitHub repo go to *Settings → Pages → Source* and choose
+**GitHub Actions**. After that, every change merged to `main` publishes the app to
+`https://lgbtnewsradio-sudo.github.io/HVAC-school/`. That's done by the workflow
+`.github/workflows/lumafix-web.yml`.
+Alternatively, on vercel.com choose *Add New → Project*, import this repo, and set the
+*Root Directory* to `video-enhancer/web` (Vercel detects Vite automatically).
 
 ---
 
